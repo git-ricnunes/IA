@@ -1,0 +1,8 @@
+7
+R d
+G d
+R l
+Y d
+R u
+Y l
+R d
