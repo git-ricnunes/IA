@@ -2,24 +2,40 @@
 
 
 import numpy as np
-import sklearn as skl
 import random as rand
 import math
 
+
+######## AUX FUNCTIONS ########
+def CountOutput(examples):
+    trueCount=0
+    falseCount=0
+    for example in examples:
+        if example[1]==1 :
+            trueCount=trueCount+1
+        else:
+            falseCount=falseCount+1
+    
+    return trueCount,falseCount
+
+def CountOutputSubSet(examples,attribute,attributeValue):
+    trueCount=0
+    falseCount=0
+    for example in examples:
+        if example[0][attribute]==attributeValue:
+            if example[1]==1 :
+                trueCount=trueCount+1
+            else:
+                falseCount=falseCount+1
+    
+    return trueCount,falseCount
+            
 def PluralityValue(examples):
     # Function : PluralityValue
     # desc: 
     # args:
     # return :
-        
-    trueCount=0
-    falseCount=0
-    
-    for example in examples:
-        if example[1]==1 :
-            trueCount=trueCount+1
-        else:
-            falseCount=falseCount+1  
+    trueCount,falseCount=CountOutput(examples)
 
     if falseCount > trueCount:
         return 0
@@ -41,13 +57,22 @@ def CheckExamplesClassification(examples):
     
     return True        
 
-def Importance(attributes):
+def Importance(attributes,examples):
     # Function : Importance
     # desc: 
     # args:
     # return :
-        
-    return np.argmax(attributes)
+    print(attributes.shape[0])
+    argmaxArray=np.array(attributes.shape )    
+    p,n=CountOutput(examples)
+    totalEntropy=Entropy(p,n)
+    
+    for i in range(attributes.shape[0]):
+        print(argmaxArray.size)
+
+        argmaxArray[i]=Gain(examples,i,totalEntropy)
+    
+    return np.argmax(argmaxArray)
 
 def Entropy(p,n):
     # Function : Entropy
@@ -56,23 +81,39 @@ def Entropy(p,n):
     # return :
         
     q = p/(p+n)   
-    B = -1*( ( q * math.log(q,2) ) + ( (1-q ) * math.log( (1-q) ,2))) 
+    
+    if q == 0:
+        return 0
+
+    B = -1*( ( q * (math.log(q,2)) ) + ( (1-q ) * math.log( (1-q) ,2))) 
     
     return B
 
-def Remainder(attributes):
+def Remainder(examples,attribute):
     # Function : Remainder
     # desc: 
     # args:
     # return :
-    return np.argmax(attributes)
+        
+    p,n=CountOutput(examples)
 
-def Gain(attribute):
+    remainderSum=0
+   
+    for example in examples:
+        attributeValue=example[0][attribute]
+        pk,nk=CountOutputSubSet(examples,attribute,attributeValue)
+        remainderSum=remainderSum + ((pk+nk)/(p+n) * Entropy(pk,nk) ) 
+     
+    return remainderSum
+    #return np.argmax(attributes)
+
+def Gain(examples,attribute,entropy):
     # Function : Gain
     # desc: 
     # args:
     # return :
-    return np.argmax(attributes)
+    
+    return entropy - Remainder(examples,attribute)
 
 
 def DTL(examples,attributes,parentExamples):
@@ -86,13 +127,13 @@ def DTL(examples,attributes,parentExamples):
     if examples.size == 0:
         return PluralityValue(parentExamples)
     elif CheckExamplesClassification(examples):
-        return attributes[0]
+        return examples[0][1]
     elif attributes.size == 0:
         return PluralityValue(examples)
     else:
-        A = np.argmax(attributes)
-#        np.put(tree,0,A)
-       
+        A = Importance(attributes,examples)
+       # np.put(tree,0,A)
+
     return tree
 
 def CreateExamples(D,Y):
