@@ -18,15 +18,12 @@ def CountOutput(examples):
     
     return trueCount,falseCount
 
-def CountOutputSubSet(examples,attribute,attributeValue):
+def CountOutputSubSet(examples,attribute):
     trueCount=0
     falseCount=0
     for example in examples:
-        if example[0][attribute]==attributeValue:
-            if example[1]==1 :
-                trueCount=trueCount+1
-            else:
-                falseCount=falseCount+1
+        print(example[0][attribute]) 
+        
     
     return trueCount,falseCount
             
@@ -62,15 +59,14 @@ def Importance(attributes,examples):
     # desc: 
     # args:
     # return :
-
+    argmaxArray=[]
     p,n=CountOutput(examples)
     totalEntropy=Entropy(p,n)
     
-    argmaxArray=Gain(examples,attributes,totalEntropy)
-    
-    print(argmaxArray)
+    for att in attributes:
+        argmaxArray.append(Gain(examples,att,totalEntropy))
 
-    return np.argmax(argmaxArray)
+    return attributes[np.argmax(argmaxArray)]
 
 def Entropy(p,n):
     # Function : Entropy
@@ -86,32 +82,53 @@ def Entropy(p,n):
     
     return B
 
-def Remainder(examples,attributes):
+def Remainder(examples,attribute):
     # Function : Remainder
     # desc: 
     # args:
     # return :
         
     p,n=CountOutput(examples)
-
     remainderSum=0
-    for attribute in attributes:
-        print(attribute)
-        attributeValue=examples[0][attribute]
-        print(CountOutputSubSet(examples,attribute,attributeValue))
-        pk,nk=CountOutputSubSet(examples,attribute,attributeValue)
-        remainderSum=remainderSum + ((pk+nk)/(p+n) * Entropy(pk,nk) ) 
-     
+    
+    #print(examples)
+    #print(attribute)
+    
+    attribureValue= []
+    attribureValueAux= []
+    for example in examples:
+        if example[0][attribute] in attribureValueAux:
+            i=attribureValueAux.index(example[0][attribute])
+            if example[1] == 0:
+                attribureValue[i]=((attribureValue[i][0],attribureValue[i][1]+1,attribureValue[i][2]))
+            else:
+                attribureValue[i]=((attribureValue[i][0],attribureValue[i][1],attribureValue[i][2]+1))
+        else:
+            if example[1] == 0:
+                attribureValueAux.append(example[0][attribute])
+                attribureValue.append((example[0][attribute],1,0))
+            else:
+                attribureValueAux.append(example[0][attribute])
+                attribureValue.append((example[0][attribute],0,1))
+   
+    
+   
+    
+    for atv in attribureValue:
+       remainderSum=remainderSum + ((atv[2]+atv[1])/(p+n) * Entropy(atv[2],atv[1]))      
+         
+  
+    #print(attribureValue)
     return remainderSum
     #return np.argmax(attributes)
 
-def Gain(examples,attributes,entropy):
+def Gain(examples,attribute,entropy):
     # Function : Gain
     # desc: 
     # args:
     # return :
     
-    return entropy - Remainder(examples,attributes)
+    return entropy - Remainder(examples,attribute)
 
 
 def DTL(examples,attributes,parentExamples):
