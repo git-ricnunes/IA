@@ -3,6 +3,7 @@
 
 import numpy as np
 import random as rand
+import copy as cp
 import math
 
 
@@ -15,16 +16,6 @@ def CountOutput(examples):
             trueCount=trueCount+1
         else:
             falseCount=falseCount+1
-    
-    return trueCount,falseCount
-
-def CountOutputSubSet(examples,attribute):
-    trueCount=0
-    falseCount=0
-    for example in examples:
-        print(example[0][attribute]) 
-        
-    
     return trueCount,falseCount
             
 def PluralityValue(examples):
@@ -46,8 +37,8 @@ def CheckExamplesClassification(examples):
     # desc: 
     # args:
     # return :
-        
     lastClassification = examples[0][1]
+    
     for i in range(1,examples.shape[0]):
         if examples[i][1]!=lastClassification:
             return False
@@ -62,10 +53,8 @@ def Importance(attributes,examples):
     argmaxArray=[]
     p,n=CountOutput(examples)
     totalEntropy=Entropy(p,n)
-    
-    for att in attributes:
+    for att in range(attributes.shape[0]):
         argmaxArray.append(Gain(examples,att,totalEntropy))
-
     return attributes[np.argmax(argmaxArray)]
 
 def Entropy(p,n):
@@ -91,9 +80,6 @@ def Remainder(examples,attribute):
     p,n=CountOutput(examples)
     remainderSum=0
     
-    #print(examples)
-    #print(attribute)
-    
     attribureValue= []
     attribureValueAux= []
     for example in examples:
@@ -111,16 +97,11 @@ def Remainder(examples,attribute):
                 attribureValueAux.append(example[0][attribute])
                 attribureValue.append((example[0][attribute],0,1))
    
-    
-   
-    
     for atv in attribureValue:
        remainderSum=remainderSum + ((atv[2]+atv[1])/(p+n) * Entropy(atv[2],atv[1]))      
          
   
-    #print(attribureValue)
     return remainderSum
-    #return np.argmax(attributes)
 
 def Gain(examples,attribute,entropy):
     # Function : Gain
@@ -138,7 +119,6 @@ def DTL(examples,attributes,parentExamples):
     # return :
         
     tree = np.empty((3,), dtype=object)
-    
     if examples.size == 0:
         return PluralityValue(parentExamples)
     elif CheckExamplesClassification(examples):
@@ -147,8 +127,27 @@ def DTL(examples,attributes,parentExamples):
         return PluralityValue(examples)
     else:
         A = Importance(attributes,examples)
-       # np.put(tree,0,A)
-
+        AIndex = np.where(attributes == A)
+        
+        tree=[A]
+        vksArr=[]
+        
+        pExamples=cp.deepcopy(examples)
+        pAttributes=cp.deepcopy(attributes)
+        for example in examples:
+            vksArr.append((example[0][A],example[1]))
+        
+        for vks in np.unique(vksArr):
+            exsAux=[]
+            exsAuxY=[]
+            exs=[]
+            for example in examples:
+                if example[0][A] == vks:
+                    exsAux.append(example[0])
+                    exsAuxY.append(example[1])
+            exs=CreateExamples(np.array(exsAux),np.array(exsAuxY))
+            
+            tree.append(DTL(exs,np.delete(pAttributes,AIndex),np.array(pExamples)))     
     return tree
 
 def CreateExamples(D,Y):
@@ -171,6 +170,5 @@ def createdecisiontree(D,Y, noise = False):
     
     examples = CreateExamples(D,Y)
     attributes = np.arange(D.shape[1])
-    DTL(examples,attributes,[])
-    #return tree
-    return [0,0,1]
+    tree=DTL(examples,attributes,[])
+    return tree
