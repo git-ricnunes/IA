@@ -62,16 +62,14 @@ def Importance(attributes,examples):
     # desc: 
     # args:
     # return :
-    print(attributes.shape[0])
-    argmaxArray=np.array(attributes.shape )    
+
     p,n=CountOutput(examples)
     totalEntropy=Entropy(p,n)
     
-    for i in range(attributes.shape[0]):
-        print(argmaxArray.size)
-
-        argmaxArray[i]=Gain(examples,i,totalEntropy)
+    argmaxArray=Gain(examples,attributes,totalEntropy)
     
+    print(argmaxArray)
+
     return np.argmax(argmaxArray)
 
 def Entropy(p,n):
@@ -80,16 +78,15 @@ def Entropy(p,n):
     # args:
     # return :
         
-    q = p/(p+n)   
-    
-    if q == 0:
+    q = p/(p+n)
+    if q==0 or q==1:
         return 0
-
-    B = -1*( ( q * (math.log(q,2)) ) + ( (1-q ) * math.log( (1-q) ,2))) 
+    else:
+        B = -1*( ( q * (math.log(q,2)) ) + ( (1-q ) * math.log( (1-q) ,2))) 
     
     return B
 
-def Remainder(examples,attribute):
+def Remainder(examples,attributes):
     # Function : Remainder
     # desc: 
     # args:
@@ -98,22 +95,23 @@ def Remainder(examples,attribute):
     p,n=CountOutput(examples)
 
     remainderSum=0
-   
-    for example in examples:
-        attributeValue=example[0][attribute]
+    for attribute in attributes:
+        print(attribute)
+        attributeValue=examples[0][attribute]
+        print(CountOutputSubSet(examples,attribute,attributeValue))
         pk,nk=CountOutputSubSet(examples,attribute,attributeValue)
         remainderSum=remainderSum + ((pk+nk)/(p+n) * Entropy(pk,nk) ) 
      
     return remainderSum
     #return np.argmax(attributes)
 
-def Gain(examples,attribute,entropy):
+def Gain(examples,attributes,entropy):
     # Function : Gain
     # desc: 
     # args:
     # return :
     
-    return entropy - Remainder(examples,attribute)
+    return entropy - Remainder(examples,attributes)
 
 
 def DTL(examples,attributes,parentExamples):
