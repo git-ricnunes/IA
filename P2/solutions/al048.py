@@ -111,25 +111,27 @@ def Gain(examples,attribute,entropy):
     
     return entropy - Remainder(examples,attribute)
 
-
 def DTL(examples,attributes,parentExamples):
     # Function : DTL
     # desc: 
     # args:
     # return :
         
-    tree = np.empty((3,), dtype=object)
+    tree = []
+  
+    
     if examples.size == 0:
         return PluralityValue(parentExamples)
     elif CheckExamplesClassification(examples):
-        return examples[0][1]
+        return int(examples[0][1])
     elif attributes.size == 0:
         return PluralityValue(examples)
     else:
+
         A = Importance(attributes,examples)
         AIndex = np.where(attributes == A)
-        
-        tree=[A]
+
+        tree=[int(A)]
         vksArr=[]
         
         pExamples=cp.deepcopy(examples)
@@ -143,10 +145,10 @@ def DTL(examples,attributes,parentExamples):
             exs=[]
             for example in examples:
                 if example[0][A] == vks:
-                    exsAux.append(example[0])
-                    exsAuxY.append(example[1])
+                    exsAux.append( [int(i) for i in example[0]] )    
+                    exsAuxY.append(int(example[1]))
             exs=CreateExamples(np.array(exsAux),np.array(exsAuxY))
-            
+    
             tree.append(DTL(exs,np.delete(pAttributes,AIndex),np.array(pExamples)))     
     return tree
 
