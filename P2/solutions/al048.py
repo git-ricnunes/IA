@@ -133,6 +133,7 @@ def DTL(examples,attributes,parentExamples):
         vksArr=[]
         pExamples=cp.deepcopy(examples)
         pAttributes=cp.deepcopy(attributes)
+        
         for example in examples:
             vksArr.append((example[0][A],example[1]))
         
