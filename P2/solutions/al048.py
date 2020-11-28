@@ -24,7 +24,7 @@ def PluralityValue(examples):
     # args:
     # return :
     trueCount,falseCount=CountOutput(examples)
-
+    
     if falseCount > trueCount:
         return 0
     elif falseCount < trueCount:
@@ -38,7 +38,7 @@ def CheckExamplesClassification(examples):
     # args:
     # return :
     lastClassification = examples[0][1]
-    
+        
     for i in range(1,examples.shape[0]):
         if examples[i][1]!=lastClassification:
             return False
@@ -108,7 +108,6 @@ def Gain(examples,attribute,entropy):
     # desc: 
     # args:
     # return :
-    
     return entropy - Remainder(examples,attribute)
 
 def DTL(examples,attributes,parentExamples):
@@ -116,24 +115,22 @@ def DTL(examples,attributes,parentExamples):
     # desc: 
     # args:
     # return :
-        
-    tree = []
-  
-    
+ 
     if examples.size == 0:
         return PluralityValue(parentExamples)
     elif CheckExamplesClassification(examples):
-        return int(examples[0][1])
+        if len(parentExamples)==0:
+             tree=[0,int(examples[0][1]),int(examples[0][1]) ]
+             return tree
+        else:
+            return int(examples[0][1])
     elif attributes.size == 0:
         return PluralityValue(examples)
     else:
-
         A = Importance(attributes,examples)
         AIndex = np.where(attributes == A)
-
         tree=[int(A)]
         vksArr=[]
-        
         pExamples=cp.deepcopy(examples)
         pAttributes=cp.deepcopy(attributes)
         for example in examples:
