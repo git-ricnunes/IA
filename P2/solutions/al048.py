@@ -7,8 +7,9 @@ import copy as cp
 import math
 
 
-######## AUX FUNCTIONS ########
 def CountOutput(examples):
+    """ Function : PluralityValue """
+
     trueCount=0
     falseCount=0
     for example in examples:
@@ -19,10 +20,7 @@ def CountOutput(examples):
     return trueCount,falseCount
             
 def PluralityValue(examples):
-    # Function : PluralityValue
-    # desc: 
-    # args:
-    # return :
+    """ Function : PluralityValue """
     trueCount,falseCount=CountOutput(examples)
     
     if falseCount > trueCount:
@@ -31,12 +29,36 @@ def PluralityValue(examples):
         return 1
     else: #falseCount == trueCount
         return rand.choice([0,1])
+
+def DecissionTreePostPrunning(tree):
+    """ Function : PluralityValue """
+    workTree= cp.deepcopy(tree)
+    
+    arrayTreeScore=[]
+    SSR=0
+    alfa=10000
+    """
+    for branch in workTree:
+        if(isinstance(branch, list)):
+            
+            pass
+        else:
+            pass
+    
+    
+    """
+
+  
+    return workTree
+
+def CrossValidation(tree):
+    """ Function : PluralityValue """   
+    newTree= cp.deepcopy(tree)
+  
+    return newTree
         
 def CheckExamplesClassification(examples):
-    # Function : CheckExamplesClassification
-    # desc: 
-    # args:
-    # return :
+    """ Function : PluralityValue """
     lastClassification = examples[0][1]
         
     for i in range(1,examples.shape[0]):
@@ -46,10 +68,7 @@ def CheckExamplesClassification(examples):
     return True        
 
 def Importance(attributes,examples):
-    # Function : Importance
-    # desc: 
-    # args:
-    # return :
+    """ Function : PluralityValue """
     argmaxArray=[]
     p,n=CountOutput(examples)
     totalEntropy=Entropy(p,n)
@@ -58,11 +77,7 @@ def Importance(attributes,examples):
     return attributes[np.argmax(argmaxArray)]
 
 def Entropy(p,n):
-    # Function : Entropy
-    # desc: 
-    # args:
-    # return :
-        
+    """ Function : PluralityValue """
     q = p/(p+n)
     if q==0 or q==1:
         return 0
@@ -71,17 +86,24 @@ def Entropy(p,n):
     
     return B
 
+def calcExpectedVal(a,pn,nk,p,n):
+    return a*( ( pn + nk ) / (p + n) )
+
+def sigTest(p,n,pn,nk):
+    
+    expectedP=calcExpectedVal(p,pn,nk,p,n)
+    expectedN=calcExpectedVal(n,pn,nk,p,n)
+    
+    return (( pow( (pn - expectedP ),2))/expectedP) + ((pow((pn - expectedN ),2) ) / expectedN )
+
 def Remainder(examples,attribute):
-    # Function : Remainder
-    # desc: 
-    # args:
-    # return :
-        
+    """ Function : PluralityValue """
     p,n=CountOutput(examples)
     remainderSum=0
-    
+    significanteTest=0
     attribureValue= []
     attribureValueAux= []
+    
     for example in examples:
         if example[0][attribute] in attribureValueAux:
             i=attribureValueAux.index(example[0][attribute])
@@ -98,24 +120,22 @@ def Remainder(examples,attribute):
                 attribureValue.append((example[0][attribute],0,1))
    
     for atv in attribureValue:
-       remainderSum=remainderSum + ((atv[2]+atv[1])/(p+n) * Entropy(atv[2],atv[1]))      
+       significanteTest= significanteTest+ sigTest(p,n,atv[2],atv[1])
+       remainderSum=remainderSum + ((atv[2] +atv[1])/(p+n) * Entropy(atv[2],atv[1]))      
          
   
-    return remainderSum
+    return remainderSum,significanteTest
 
 def Gain(examples,attribute,entropy):
-    # Function : Gain
-    # desc: 
-    # args:
-    # return :
-    return entropy - Remainder(examples,attribute)
+    """ Function : PluralityValue """
+    """ TODO: """
+    test= Remainder(examples,attribute)
+    
+    return entropy - test[0]
 
 def DTL(examples,attributes,parentExamples):
-    # Function : DTL
-    # desc: 
-    # args:
-    # return :
- 
+    """ Function : PluralityValue """
+
     if examples.size == 0:
         return PluralityValue(parentExamples)
     elif CheckExamplesClassification(examples):
@@ -147,14 +167,13 @@ def DTL(examples,attributes,parentExamples):
                     exsAuxY.append(int(example[1]))
             exs=CreateExamples(np.array(exsAux),np.array(exsAuxY))
     
-            tree.append(DTL(exs,np.delete(pAttributes,AIndex),np.array(pExamples)))     
+            tree.append(DTL(exs,np.delete(pAttributes,AIndex),np.array(pExamples))) 
+            
     return tree
 
 def CreateExamples(D,Y):
-    # Function : CreateExamples
-    # desc: 
-    # args:
-    # return :
+    """ Function : PluralityValue """
+
     arrayExamples = np.empty((D.shape[0],), dtype=object)
 
     for i in  range(0,Y.size):
@@ -163,12 +182,12 @@ def CreateExamples(D,Y):
     return arrayExamples
 
 def createdecisiontree(D,Y, noise = False):
-    # Function : createdecisiontree
-    # desc: 
-    # args:
-    # return :
+    """ Function : PluralityValue """
+
     
     examples = CreateExamples(D,Y)
     attributes = np.arange(D.shape[1])
     tree=DTL(examples,attributes,[])
-    return tree
+    prunnedTree=DecissionTreePostPrunning(tree)
+
+    return prunnedTree
