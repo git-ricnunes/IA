@@ -5,7 +5,31 @@ import numpy as np
 import random as rand
 import copy as cp
 import math
+import time 
 
+
+def classify(T,data):
+    
+    data = np.array(data)
+    out = []
+    for el in data:
+        #print("el",el,"out",out,"\nT",T)
+        wT = T
+        for ii in range(len(el)):
+            #print(T[0],el[T[0]],T)
+            if el[wT[0]]==0:
+                if not isinstance(wT[1], list):
+                    out += [wT[1]]
+                    break
+                else:
+                    wT = wT[1]
+            else:
+                if not isinstance(wT[2], list):
+                    out += [wT[2]]
+                    break
+                else:
+                    wT = wT[2]
+    return np.array(out)
 
 def CountOutput(examples):
     """ Function : PluralityValue """
@@ -30,32 +54,6 @@ def PluralityValue(examples):
     else: #falseCount == trueCount
         return rand.choice([0,1])
 
-def DecissionTreePostPrunning(tree):
-    """ Function : PluralityValue """
-    workTree= cp.deepcopy(tree)
-    
-    arrayTreeScore=[]
-    SSR=0
-    alfa=10000
-    """
-    for branch in workTree:
-        if(isinstance(branch, list)):
-            
-            pass
-        else:
-            pass
-    
-    
-    """
-
-  
-    return workTree
-
-def CrossValidation(tree):
-    """ Function : PluralityValue """   
-    newTree= cp.deepcopy(tree)
-  
-    return newTree
         
 def CheckExamplesClassification(examples):
     """ Function : PluralityValue """
@@ -86,21 +84,11 @@ def Entropy(p,n):
     
     return B
 
-def calcExpectedVal(a,pn,nk,p,n):
-    return a*( ( pn + nk ) / (p + n) )
-
-def sigTest(p,n,pn,nk):
-    
-    expectedP=calcExpectedVal(p,pn,nk,p,n)
-    expectedN=calcExpectedVal(n,pn,nk,p,n)
-    
-    return (( pow( (pn - expectedP ),2))/expectedP) + ((pow((pn - expectedN ),2) ) / expectedN )
 
 def Remainder(examples,attribute):
     """ Function : PluralityValue """
     p,n=CountOutput(examples)
     remainderSum=0
-    significanteTest=0
     attribureValue= []
     attribureValueAux= []
     
@@ -120,18 +108,16 @@ def Remainder(examples,attribute):
                 attribureValue.append((example[0][attribute],0,1))
    
     for atv in attribureValue:
-       significanteTest= significanteTest+ sigTest(p,n,atv[2],atv[1])
        remainderSum=remainderSum + ((atv[2] +atv[1])/(p+n) * Entropy(atv[2],atv[1]))      
          
-  
-    return remainderSum,significanteTest
+    return remainderSum
 
 def Gain(examples,attribute,entropy):
     """ Function : PluralityValue """
     """ TODO: """
     test= Remainder(examples,attribute)
     
-    return entropy - test[0]
+    return entropy - test
 
 def DTL(examples,attributes,parentExamples):
     """ Function : PluralityValue """
@@ -171,6 +157,68 @@ def DTL(examples,attributes,parentExamples):
             
     return tree
 
+def calcExpectedVal(a,pn,nk,p,n):
+    return a*( ( pn + nk ) / (p + n) )
+
+def sigTest(p,n,pn,nk):
+    
+    expectedP=calcExpectedVal(p,pn,nk,p,n)
+    expectedN=calcExpectedVal(n,pn,nk,p,n)
+    
+    return (( pow( (pn - expectedP ),2))/expectedP) + ((pow((pn - expectedN ),2) ) / expectedN )
+
+def isLeaf(tree):
+    """ Function : PluralityValue """
+    time.sleep(2)
+    print(tree)
+    return isinstance(tree[1],int) and isinstance(tree[2],int)
+
+
+def DecissionTreePostPrunning(tree,D,Y):
+    """ Function : PluralityValue """
+    workTree= cp.deepcopy(tree)
+    Yp = classify(tree,D)
+
+    newTreeError1=0
+    newTreeError2=0
+    originalErro=np.mean(np.abs(Yp-Y))
+        
+    isPruned=False
+    
+    while(not isPruned):
+        workTree1=workTree[1]
+        if(not isinstance(workTree1,int)):
+            Yp = classify(workTree1,D)
+            newTreeError1=np.mean(np.abs(Yp-Y))
+
+        workTree2=workTree[2]
+        if(not isinstance(workTree2,int)):
+            Yp = classify(workTree2,D)
+            newTreeError2=np.mean(np.abs(Yp-Y))
+
+
+        if(originalErro>=newTreeError1):
+            if(isinstance(workTree1,int)):
+                isPruned=True
+                break
+            else:
+                workTree=workTree1
+
+        elif(originalErro>=newTreeError2):
+            if(isinstance(workTree2,int)):
+                isPruned=True
+                break
+            else:
+                 workTree=workTree2
+        else:
+            isPruned=True
+      #print(tree)
+
+    return workTree
+
+
+
+
 def CreateExamples(D,Y):
     """ Function : PluralityValue """
 
@@ -184,10 +232,9 @@ def CreateExamples(D,Y):
 def createdecisiontree(D,Y, noise = False):
     """ Function : PluralityValue """
 
-    
     examples = CreateExamples(D,Y)
     attributes = np.arange(D.shape[1])
     tree=DTL(examples,attributes,[])
-    prunnedTree=DecissionTreePostPrunning(tree)
+    prunnedTree=DecissionTreePostPrunning(tree,D,Y)
 
     return prunnedTree
