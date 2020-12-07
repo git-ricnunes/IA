@@ -103,7 +103,7 @@ for file in files:
                     #print("tree > ", T)
                 except:
                     print(R+"Test failed")
-            print("points", points, "/26", "short", pointsshort, "/2")
+            print("points", points, "/27", "short", pointsshort, "/2")
             
             # DATASETS WITH NOISE
             print("\n\n\t Testing robustness to noise\n\n")

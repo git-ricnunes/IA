@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Grupo al048
+Ricardo Nunes id #71015
+"""
 
 import numpy as np
 import random as rand
