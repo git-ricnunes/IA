@@ -30,7 +30,9 @@ def classify(T,data):
     return np.array(out)
 
 def CountOutput(examples):
-    """ Function : CountOutput """
+    """ Function : CountOutput 
+    
+    """
 
     trueCount=0
     falseCount=0
@@ -168,13 +170,11 @@ def DecissionTreePostPrunning(tree,D,Y):
     
     while(not isPruned):
         workTree1=workTree[1]
-        print(workTree1)
         if(not isinstance(workTree1,int)):
             Yp = classify(workTree1,D)
             newTreeError1=np.mean(np.abs(Yp-Y))
 
         workTree2=workTree[2]
-        print(workTree2)
         if(not isinstance(workTree2,int)):
             Yp = classify(workTree2,D)
             newTreeError2=np.mean(np.abs(Yp-Y))
